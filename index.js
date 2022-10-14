@@ -6,8 +6,12 @@ const cors = require("cors");
 let passwordHash = require('password-hash');
 app.use(express.json());
 app.use(cors());
-export const DBConnect = {
-    
+const DBConnect = {
+    host: '209.59.180.100',
+    port: '3306',
+    database: 'relie',
+    user: 'relie_user',
+    password: 'mqOI*YYt*)CW'
 }
 
 app.get('/', (req, res) => {
@@ -42,7 +46,7 @@ app.get('/user/:email/:password',  (req, res) => {
     })
 })
 
-// Get user by ID
+// Get user by ID for Nav
 
 app.get('/user/:id', (req, res) => {
     const connection = mysql.createConnection(DBConnect);
@@ -95,6 +99,32 @@ app.get('/profile/:id', (req, res) => {
         }
         else {
             res.status(204).send({message: 'There was no user found with this id'})
+        }
+    })
+})
+
+app.get('/quotes&OrdersNumber/:rep_id', (req, res) => {
+    const connection = mysql.createConnection(DBConnect);
+
+    let data=[];
+
+    connection.query(`select count(*) from quotes q where q.rep_id = ${req.params.rep_id}`, (err, results) => {
+        if(!err) {
+            data.push(results[0]);
+        }
+        else {
+            res.status(403).send({message: 'Error'})
+        }
+    })
+
+    connection.query(`select count(*) from orders q where q.rep_id = ${req.params.rep_id}`, (err, results) => {
+        if(!err) {
+            data.push(results[0]);
+            connection.end();
+            res.send(data);
+        }
+        else {
+            res.status(403).send({message: 'Error'})
         }
     })
 })
