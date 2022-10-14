@@ -6,9 +6,7 @@ const cors = require("cors");
 let passwordHash = require('password-hash');
 app.use(express.json());
 app.use(cors());
-const DBConnect = {
-    
-}
+const DBConnect = process.env.DB_CONNECT || require('./db')
 
 app.get('/', (req, res) => {
     
