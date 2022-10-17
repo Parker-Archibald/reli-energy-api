@@ -97,6 +97,8 @@ app.get('/profile/:id', (req, res) => {
     })
 })
 
+// Get the quote and order amount for dashboard
+
 app.get('/quotes&OrdersNumber/:rep_id', (req, res) => {
     const connection = mysql.createConnection(DBConnect);
 
@@ -123,5 +125,37 @@ app.get('/quotes&OrdersNumber/:rep_id', (req, res) => {
     })
 })
 
+// Get all orders associated with rep_id
+
+app.get('/myOrders/:rep_id', (req, res) => {
+    const connection = mysql.createConnection(DBConnect);
+
+    connection.query(`select order_id, cust_id, quote_id, total_amount, order_date from orders where rep_id = ${req.params.rep_id}`, (err, results) => {
+        if(!err) {
+            connection.end();
+            res.send(results);
+        }
+        else {
+            connection.end();
+            res.status(403).send({message: 'No orders found'})
+        }
+    })
+})
+
+// Get customer info for order 
+
+app.get('/customerOrder/:cust_id', (req, res) => {
+    const connection = mysql.createConnection(DBConnect);
+
+    connection.query(`select fname, lname from customers where cust_id = ${req.params.cust_id}`, (err, results) => {
+        if(!err) {
+            connection.end();
+            res.send(results);
+        }
+        else {
+            res.status(403).send({message: 'Customer not found'})
+        }
+    })
+})
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
