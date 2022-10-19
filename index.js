@@ -158,4 +158,21 @@ app.get('/customerOrder/:cust_id', (req, res) => {
     })
 })
 
+// Get your quotes by rep_id
+
+app.get('/myQuotes/:rep_id', (req, res) => {
+    const connection = mysql.createConnection(DBConnect);
+
+    connection.query(`select quote_name, quote_id, quote_phone, quote_date, quote_status, sq_foot, quote_tot1, quote_tot2 from quotes where rep_id = ${req.params.rep_id}`, (err, results) => {
+        if(!err) {
+            connection.end();
+            res.send(results);
+        }
+        else {
+            connection.end();
+            res.status(403).send({message: "No Quotes Found"});
+        }
+    })
+})
+
 app.listen(port, () => console.log(`Listening on port ${port}`));
