@@ -175,4 +175,21 @@ app.get('/myQuotes/:rep_id', (req, res) => {
     })
 })
 
+// Update profile information
+
+app.put('/myProfile/:id', (req, res) => {
+    const connection = mysql.createConnection(DBConnect);
+
+    connection.query(`update users set first_name = '${req.body.first_name}', last_name = '${req.body.last_name}', email = '${req.body.email}', phone_number = '${req.body.phone_number}' where id = '${req.params.id}'`, (err, results) => {
+        if(!err) {
+            connection.end();
+            res.send({message: 'Profile Updated!'})
+        }
+        else {
+            connection.end();
+            res.status(400).send({message: 'Profile not found', error: err})
+        }
+    })
+})
+
 app.listen(port, () => console.log(`Listening on port ${port}`));
