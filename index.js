@@ -133,6 +133,7 @@ app.get('/myOrders/:rep_id', (req, res) => {
     connection.query(`select order_id, cust_id, quote_id, total_amount, order_date from orders where rep_id = ${req.params.rep_id}`, (err, results) => {
         if(!err) {
             connection.end();
+            console.log(results)
             res.send(results);
         }
         else {
