@@ -193,19 +193,61 @@ app.get('/profileInfo/:rep_id/:info', (req, res) => {
 
 // Update profile information
 
-app.put('/myProfile/:id', (req, res) => {
+// app.put('/myProfile/:id', (req, res) => {
+//     const connection = mysql.createConnection(DBConnect);
+
+//     connection.query(`update users set first_name = '${req.body.first_name}', last_name = '${req.body.last_name}', email = '${req.body.email}', phone_number = '${req.body.phone_number}' where id = '${req.params.id}'`, (err, results) => {
+//         if(!err) {
+//             connection.end();
+//             res.send({message: 'Profile Updated!'})
+//         }
+//         else {
+//             connection.end();
+//             res.status(400).send({message: 'Profile not found', error: err})
+//         }
+//     })
+// })
+// May not use.
+
+// Update profile
+
+app.put('/myProfile/:id/:fieldType', (req, res) => {
     const connection = mysql.createConnection(DBConnect);
 
-    connection.query(`update users set first_name = '${req.body.first_name}', last_name = '${req.body.last_name}', email = '${req.body.email}', phone_number = '${req.body.phone_number}' where id = '${req.params.id}'`, (err, results) => {
-        if(!err) {
+    if(req.params.fieldType === 'name') {
+        connection.query(`update users set first_name = '${req.body.first_name}', last_name = '${req.body.last_name}' where id = ${req.params.id}`, (err, results) => {
+            if(!err) {
+                connection.end();
+                res.send({message: 'User Updated'})
+            }
+            else {
+                connection.end();
+                res.status(403).send({message: 'Not Updated'})
+            }
+        })
+    }
+    else if(req.params.fieldType === 'email') {
+        connection.query(`update users set email = '${req.body.email}' where id = ${req.params.id}`, (err, results) => {
             connection.end();
-            res.send({message: 'Profile Updated!'})
-        }
-        else {
+            if(!err) {
+                res.send({message: 'User Updated'})
+            }
+            else {
+                res.status(403).send({message: 'User Not Updated'})
+            }
+        })
+    }
+    else if(req.params.fieldType === 'phone') {
+        connection.query(`update users set phone_number = '${req.body.phone_number}' where id = ${req.params.id}`, (err, results) => {
             connection.end();
-            res.status(400).send({message: 'Profile not found', error: err})
-        }
-    })
+            if(!err) {
+                res.send({message: 'User Updated'})
+            }
+            else {
+                res.status(403).send({message: 'User Not Updated'})
+            }
+        })
+    }
 })
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
