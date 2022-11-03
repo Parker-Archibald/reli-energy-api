@@ -56,47 +56,6 @@ app.get('/user/:id', (req, res) => {
     })
 })
 
-// Get user by ID for Profile Page
-
-app.get('/profile/:id', (req, res) => {
-    const connection = mysql.createConnection(DBConnect);
-
-    connection.query(`select first_name, last_name, email, phone_number, status, created from users where id = ${req.params.id} `, (err, results) => {
-        if(!err) {
-            connection.end();
-
-            if(results[0].status === 1) {
-                const newData = [{
-                    first_name: results[0].first_name,
-                    last_name: results[0].last_name,
-                    email: results[0].email,
-                    phone_number: results[0].phone_number,
-                    created: results[0].created,
-                    status: "Active"
-                }]
-
-                res.send(newData);
-            }
-
-            else {
-                const newData = [{
-                    first_name: results[0].first_name,
-                    last_name: results[0].last_name,
-                    email: results[0].email,
-                    phone_number: results[0].phone_number,
-                    created: results[0].created,
-                    status: "Inactive"
-                }]
-                
-                res.send(newData)
-            }
-        }
-        else {
-            res.status(204).send({message: 'There was no user found with this id'})
-        }
-    })
-})
-
 // Get the quote and order amount for dashboard
 
 app.get('/quotes&OrdersNumber/:rep_id', (req, res) => {
@@ -175,79 +134,134 @@ app.get('/myQuotes/:rep_id', (req, res) => {
     })
 })
 
-// Get information for edit profile
+// Get user by ID for Profile Page
 
-app.get('/profileInfo/:rep_id/:info', (req, res) => {
+app.get('/profile/:id', (req, res) => {
     const connection = mysql.createConnection(DBConnect);
 
-    connection.query(`select first_name, last_name, ${req.params.info} from users where id = ${req.params.rep_id}`, (err, results) => {
+    let newData;
+
+    connection.query(`select first_name, last_name, email, phone_number, status, created, address from users where id = ${req.params.id} `, (err, results) => {
         if(!err) {
-            connection.end();
-            res.send(results);
+
+            if(results[0].status === 1) {
+                newData = [{
+                    first_name: results[0].first_name,
+                    last_name: results[0].last_name,
+                    email: results[0].email,
+                    phone_number: results[0].phone_number,
+                    created: results[0].created,
+                    address: results[0].address,
+                    zipcode: results[0].zipcode,
+                    status: "Active"
+                }]
+            }
+
+            else {
+                newData = [{
+                    first_name: results[0].first_name,
+                    last_name: results[0].last_name,
+                    email: results[0].email,
+                    phone_number: results[0].phone_number,
+                    created: results[0].created,
+                    address: results[0].address,
+                    status: "Inactive"
+                }]
+            
+            }
         }
         else {
-            res.status(403).send({message: 'Rep not found', error: err})
+            res.status(204).send({message: 'There was no user found with this id'})
+        }
+    })
+
+    connection.query(`select marital_status from user_details where id = ${req.params.id}`, (err, results) => {
+        connection.end();
+        if(!err) {
+            // newData = {...newData, maritalStatus: results[0].marital_status};
+            newData.push(results[0])
+
+            res.send(newData);
+        }
+        else {
+            res.status(403).send({message: 'Marital Status Error', error: err})
         }
     })
 })
 
-// Update profile information
+// Get all products
 
-// app.put('/myProfile/:id', (req, res) => {
-//     const connection = mysql.createConnection(DBConnect);
-
-//     connection.query(`update users set first_name = '${req.body.first_name}', last_name = '${req.body.last_name}', email = '${req.body.email}', phone_number = '${req.body.phone_number}' where id = '${req.params.id}'`, (err, results) => {
-//         if(!err) {
-//             connection.end();
-//             res.send({message: 'Profile Updated!'})
-//         }
-//         else {
-//             connection.end();
-//             res.status(400).send({message: 'Profile not found', error: err})
-//         }
-//     })
-// })
-// May not use.
-
-// Update profile
-
-app.put('/myProfile/:id/:fieldType', (req, res) => {
+app.get('/getProducts', (req, res) => {
     const connection = mysql.createConnection(DBConnect);
 
-    if(req.params.fieldType === 'name') {
-        connection.query(`update users set first_name = '${req.body.first_name}', last_name = '${req.body.last_name}' where id = ${req.params.id}`, (err, results) => {
-            if(!err) {
-                connection.end();
-                res.send({message: 'User Updated'})
-            }
-            else {
-                connection.end();
-                res.status(403).send({message: 'Not Updated'})
-            }
-        })
-    }
-    else if(req.params.fieldType === 'email') {
-        connection.query(`update users set email = '${req.body.email}' where id = ${req.params.id}`, (err, results) => {
-            connection.end();
-            if(!err) {
-                res.send({message: 'User Updated'})
-            }
-            else {
-                res.status(403).send({message: 'User Not Updated'})
-            }
-        })
-    }
-    else if(req.params.fieldType === 'phone') {
-        connection.query(`update users set phone_number = '${req.body.phone_number}' where id = ${req.params.id}`, (err, results) => {
-            connection.end();
-            if(!err) {
-                res.send({message: 'User Updated'})
-            }
-            else {
-                res.status(403).send({message: 'User Not Updated'})
-            }
-        })
-    }
+    connection.query(`select prod_name, prod_type_id, prod_cost, prod_calc from products`, (err, results) => {
+        connection.end();
+        if(!err) {
+            res.send(results)
+        }
+        else {
+            res.status(403).send({message: 'Products error', error: err})
+        }
+    })
 })
+
+// Get insulation types and costs
+
+app.get('/insulation', (req, res) => {
+    const connection = mysql.createConnection(DBConnect);
+
+    connection.query('select ins_type, ins_r_value from insulation', (err, results) => {
+        connection.end();
+        if(!err) {
+            res.send(results)
+        }
+        else {
+            res.status(403).send({message: 'Insulation Error', error: err})
+        }
+    })
+})
+
+
+
+
+
+// Updates
+
+// Update profile information
+
+app.put('/myProfile/:id', (req, res) => {
+    const connection = mysql.createConnection(DBConnect);
+
+    connection.query(`update users set first_name = '${req.body.first_name}', last_name = '${req.body.last_name}', email = '${req.body.email}', phone_number = '${req.body.phone_number}' where id = '${req.params.id}'`, (err, results) => {
+        connection.end();
+        if(!err) {
+            res.send({message: 'User Updated'})
+        }
+        else {
+            res.status(400).send({message: 'Profile not found', error: err})
+        }
+    })
+
+    // let mStatus;
+
+    // if(req.body.maritalStatus === 'Unmarried') {
+    //     mStatus = "u"
+    // }
+    // else {
+    //     mStatus = "M"
+    // }
+
+    // connection.query(`update user_details set marital_status = ${mStatus} where id = ${req.params.id}`, (err, results) => {
+    //     connection.end();
+    //     if(!err) {
+    //         res.send({message: 'User Updated'})
+    //     }
+    //     else {
+    //         console.log(err)
+    //         res.status(403).send({message: "Marital Status Error"})
+    //     }
+    // })
+})
+
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
